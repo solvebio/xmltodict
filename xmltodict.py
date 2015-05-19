@@ -82,7 +82,7 @@ class _DictSAXHandler(object):
         i = full_name.rfind(self.namespace_separator)
         if i == -1:
             return full_name
-        namespace, name = full_name[:i], full_name[i+1:]
+        namespace, name = full_name[:i], full_name[i + 1:]
         short_namespace = self.namespaces.get(namespace, namespace)
         if not short_namespace:
             return name
@@ -102,7 +102,7 @@ class _DictSAXHandler(object):
             self.stack.append((self.item, self.data))
             if self.xml_attribs:
                 attrs = self.dict_constructor(
-                    (self.attr_prefix+self._build_name(key), value)
+                    (self.attr_prefix + self._build_name(key), value)
                     for (key, value) in attrs.items())
             else:
                 attrs = None
@@ -175,27 +175,26 @@ def _parse_to_generator(parser, handler, xml_input, **kwargs):
     producer-consumer pattern with a shared singleton queue and the producer is
     ran in another thread. The thread is started upon pulling the first item
     from the generator.
-    
+
     The generator can be cancelled before iterating all the data (eg. by a
     break within a for loop over the generator). In this case the producer is
     also gracefully terminated. Also the generator might be started and left
     without completion or cancelling (which is not a good use of a generator).
     To prevent leaking resources the resulting generator should be wrapped
     by a decorator that automatically closes it (eg. contextlib.closing()).
-    
+
     Exceptions from the parser are propagated via the generator and terminate
     it.
-    
+
     Note there are in fact two queues between the producer and consumer. The
     request queue makes the producer wait with the parser callback until the
-    generator request another item, or exit if the generator has been cancelled.
+    generator request another item, or exit if the generator has been cancelled.    # noqa
     The response queue serves for sending parsed items from the producer to the
     consumer, as well as to signal when the parser is done or to propagate its
     exception.
     '''
-    
+
     def producer(response_queue, request_queue):
-    
         def enqueue(item, is_done):
             response_queue.put((item, is_done))
 
@@ -212,12 +211,12 @@ def _parse_to_generator(parser, handler, xml_input, **kwargs):
                 can_produce = False
             if not can_produce:
                 return False
-        
+
             is_done = item is None
-        
+
             enqueue(item, is_done)
             return True
-    
+
         def run():
             try:
                 handler.item_callback = callback
@@ -228,14 +227,15 @@ def _parse_to_generator(parser, handler, xml_input, **kwargs):
                 enqueue(e, True)
             else:
                 _callback(None)
-            print('producer done')
         return run
 
     response_queue = queue.Queue(1)
     request_queue = queue.Queue(1)
 
-    producer_thread = threading.Thread(name='producer',
-        target=producer(response_queue, request_queue))
+    producer_thread = threading.Thread(
+        name='producer',
+        target=producer(response_queue, request_queue)
+    )
 
     producer_thread.start()
 
@@ -244,7 +244,7 @@ def _parse_to_generator(parser, handler, xml_input, **kwargs):
             # Signalize to the producer whether it can produce and item
             # or it should terminate. Consumer waits.
             request_queue.put(True)
-        
+
             item, is_done = response_queue.get()
             response_queue.task_done()
             if is_done:
@@ -252,7 +252,7 @@ def _parse_to_generator(parser, handler, xml_input, **kwargs):
                     break
                 else:
                     raise item
-        
+
             yield item
         producer_thread.join()
     except BaseException as e:
@@ -355,7 +355,8 @@ def parse(xml_input, encoding=None, expat=expat, process_namespaces=False,
     parser.CharacterDataHandler = handler.characters
     parser.buffer_text = True
     if item_depth > 0 and item_callback is None:
-        return contextlib.closing(_parse_to_generator(parser, handler, xml_input, **kwargs))
+        return contextlib.closing(
+            _parse_to_generator(parser, handler, xml_input, **kwargs))
     else:
         return _parse(parser, handler, xml_input)
 
@@ -405,7 +406,7 @@ def _emit(key, value, content_handler,
             content_handler.ignorableWhitespace(newl)
         for child_key, child_value in children:
             _emit(child_key, child_value, content_handler,
-                  attr_prefix, cdata_key, depth+1, preprocessor,
+                  attr_prefix, cdata_key, depth + 1, preprocessor,
                   pretty, newl, indent)
         if cdata is not None:
             content_handler.characters(cdata)

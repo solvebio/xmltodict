@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"Makes working with XML feel like you are working with JSON"
+"SolveBio fork. Makes working with XML feel like you are working with JSON"
 
 import threading
 from xml.parsers import expat
@@ -35,8 +35,8 @@ except NameError:  # pragma no cover
 
 import contextlib
 
-__author__ = 'Martin Blech'
-__version__ = '0.9.3'
+__author__ = 'Paul George'
+__version__ = '1.0.0'
 __license__ = 'MIT'
 
 
